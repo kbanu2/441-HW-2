@@ -1,0 +1,2 @@
+Epoch,Training Loss,Accuracy,Gradient Norm,Memory Usage (MB),Time per Epoch (ms)
+99,1.1549240748087566,0.0,6.964997737668455E-4,261,55
