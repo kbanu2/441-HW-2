@@ -14,7 +14,9 @@ lazy val root = (project in file("."))
           "ch.qos.logback" % "logback-classic" % "1.5.6",
           "org.jacorb" % "jacorb" % "3.9",
           "org.jboss.spec.javax.rmi" % "jboss-rmi-api_1.0_spec" % "1.0.6.Final",
-          "org.scalatest" %% "scalatest" % "3.2.10" % Test
+          "org.scalatest" %% "scalatest" % "3.2.10" % Test,
+          "org.apache.spark" %% "spark-core" % "3.5.1",
+          "org.apache.spark" %% "spark-sql" % "3.5.1"
       ),
       unmanagedSourceDirectories in Compile += baseDirectory.value / "src" / "main" / "resources"
   )
