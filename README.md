@@ -1,5 +1,5 @@
 # Krenar Banushi kbanu2@uic.edu CS 441 Homework 2 Textbook Group 2 #
-
+https://youtu.be/XlPAT22rIOU
 
 # Overview #
 The DataProcessor program is designed to process textual data for machine learning applications, specifically focusing on generating embeddings and training language models. It utilizes Apache Spark for parallel processing and Deeplearning4j for building and training neural networks.
@@ -28,6 +28,24 @@ User input in form of string
 Resulting sentence filled in using the model for word generation
 Statistics file outlining some statistics of the model generation such as:
 Number of epochs, Training loss, Accuracy, Gradient Norm, Memory Usage in MB, and time per epoch
+
+# Cluster Configuration
+Note: Remove note of .master(local[*]) if using a cloud Apache Spark service
+
+## Create a New EMR Cluster:
+## Deployment
+Upload your project JAR file and resources to an S3 bucket.
+You can also use a bootstrap action to install any additional libraries not included in the default EMR setup.
+
+## Submitting Spark Jobs
+Use the following command to submit your Spark job:
+`aws emr add-steps --cluster-id <your-cluster-id> --steps Type=Spark,Name="DataProcessor",Args=[--class,Main,s3://<your-bucket>/DataProcessor.jar]`
+
+## Spark Configuration
+You may want to adjust the following configurations:
+`spark.executor.memory=2g`
+`spark.driver.memory=1g`
+`spark.executor.cores=2`
 
 ## Prerequisites ##
 Before running the program, ensure you have the following installed:
@@ -63,5 +81,4 @@ Ensure that you specify where the embedding input is stored
 
 To run the Scala program, execute the following command from the project root:
 `sbt run`
-This will start the Scala server which can be used by the C++ program for data processing
 
