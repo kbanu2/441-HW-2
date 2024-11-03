@@ -3,3 +3,7 @@ app:
   outputFile: "DataProcessor/src/main/resources/output.txt"
   shardSize: 3                            # Shard size for splitting the text
   embeddingDim: 5
+  windowSize: 4
+  stepSize: 1
+  batchSize: 10
+  numEpochs: 100

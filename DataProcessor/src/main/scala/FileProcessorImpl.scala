@@ -1,15 +1,22 @@
 import TextProcessing._
+import com.knuddels.jtokkit.api.IntArrayList
+import org.deeplearning4j.util.ModelSerializer
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
+import org.nd4j.linalg.indexing.NDArrayIndex
 import org.omg.CORBA
 import org.omg.CORBA.{Context, ContextList, DomainManager, ExceptionList, InterfaceDef, NVList, NamedValue, ORB, Policy, PolicyListHolder, Request, SetOverrideType}
 import org.slf4j.{Logger, LoggerFactory}
 
+import java.io.File
+import scala.annotation.unused
 import scala.collection.mutable.ArrayBuffer
+import scala.util.control.Breaks.break
 
 // Implementation of the FileProcessor interface for processing text chunks.
 class FileProcessorImpl extends FileProcessorPOA {
   private val logger: Logger = LoggerFactory.getLogger(classOf[FileProcessorImpl])
+  val dataProcessor = new DataProcessor
 
   // Processes a chunk of text and returns the processing results.
   override def processChunk(chunkContent: String): ProcessingResult = {
@@ -23,10 +30,12 @@ class FileProcessorImpl extends FileProcessorPOA {
     val shardSize = appConfig("shardSize").toString.toInt
     val embeddingDim = appConfig("embeddingDim").toString.toInt
 
+    dataProcessor.setShardSize(shardSize)
+    dataProcessor.changeData(chunkContent)
+
     logger.debug(s"Shard size: $shardSize, Embedding dimension: $embeddingDim")
 
     // Create a DataProcessor instance to handle the chunk of text.
-    val dataProcessor = new DataProcessor(chunkContent, shardSize)
     // Tokenize the input data into shards.
     val tokenizedSentences = dataProcessor.processData()
 
@@ -59,9 +68,10 @@ class FileProcessorImpl extends FileProcessorPOA {
     val inputFeatures: INDArray = Nd4j.create(tokenizedArray)
     val outputLabels: INDArray = Nd4j.create(labelsArray)
 
-    val vocabSize = dataProcessor.vocabulary.size
+    val vocabSize = dataProcessor.vocabulary.size + 100
     // Create an instance of ModelTrainer for training the embedding model.
     val modelTrainer = new ModelTrainer(vocabSize, embeddingDim, inputFeatures, outputLabels)
+    modelTrainer.train()
     // Retrieve the trained embeddings.
     val embeddings = modelTrainer.getEmbeddings
     val result = new ProcessingResult()
@@ -88,8 +98,25 @@ class FileProcessorImpl extends FileProcessorPOA {
     result.wordFrequencies = wordFrequencies.toArray
     result.vectorEmbedding = embeddings.toDoubleMatrix
 
+    saveEmbeddings("test.bin", embeddings)
+    modelTrainer.saveModel("model.zip")
+
     logger.info("Processing complete.")
     result
+  }
+
+  def createInputTokens(sentence: String): Seq[IntArrayList] = {
+    dataProcessor.changeData(sentence)
+    dataProcessor.processData()
+  }
+
+  def getDataProcessor: DataProcessor = {
+    dataProcessor
+  }
+
+  def saveEmbeddings(filePath: String, embeddings: INDArray): Unit = {
+    Nd4j.saveBinary(embeddings, new File(filePath))
+    logger.info(s"Embeddings saved to $filePath")
   }
 
   // Write the processing results to output (console for now).
@@ -98,6 +125,32 @@ class FileProcessorImpl extends FileProcessorPOA {
     logger.debug(s"Word Frequencies: ${results.wordFrequencies.mkString("Array(", ", ", ")")}")
     logger.debug(s"Word Mappings: ${results.wordMappings.mkString("Array(", ", ", ")")}")
     logger.debug(s"Vector Embedding: ${results.vectorEmbedding.mkString("Array(", ", ", ")")}")
+  }
+
+  def createSlidingWindows(inputTokens: INDArray, windowSize: Int, stepSize: Int): Seq[INDArray] = {
+    val totalTokens = inputTokens.rows
+    val windows = ArrayBuffer[INDArray]()
+
+    // Create sliding windows
+    for (start <- 0 until totalTokens by stepSize) {
+      // Calculate the end index of the current window
+      val end = Math.min(start + windowSize, totalTokens)
+
+      // Extract the current window
+      val currentWindow = inputTokens.get(NDArrayIndex.interval(start, end), NDArrayIndex.all())
+
+      // If the window is not empty, add it to the list
+      if (currentWindow.rows > 0) {
+        windows += currentWindow
+      }
+
+      // Stop if we reach the end of the input
+      if (end >= totalTokens) {
+        return windows.toSeq
+      }
+    }
+
+    windows.toSeq
   }
 
   // Check if the object corresponds to the given repository identifier.

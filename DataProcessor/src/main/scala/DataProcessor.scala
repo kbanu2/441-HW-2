@@ -1,11 +1,20 @@
 import com.knuddels.jtokkit.api.IntArrayList
 import scala.collection.mutable
 
-class DataProcessor(data: String, shardSize: Int) {
-
+class DataProcessor() {
   // Create a new EncodingRegistry and get an encoding type
   val vocabulary: mutable.TreeMap[String, Int] = mutable.TreeMap[String, Int]()
   val vocabFrequency: mutable.Map[String, Int] = mutable.Map[String, Int]()
+
+  // Function to set shardSize
+  def setShardSize(size : Int): Unit = {
+    shardSize = size
+  }
+
+  // Function to update the data stored in data processor
+  def changeData(newData: String): Unit = {
+    data = newData
+  }
 
   // Process the input data by splitting into shards and tokenizing
   def processData(): Seq[IntArrayList] = {
@@ -16,10 +25,13 @@ class DataProcessor(data: String, shardSize: Int) {
   }
 
   // Split the text into shards for parallel processing
-  def splitIntoShards(text: String): Seq[String] = {
-    // Split the text into words and group them into shards
-    text.split("\\s+").grouped(shardSize).map(_.mkString(" ")).toSeq
+  private def splitIntoShards(text: String): Seq[String] = {
+    // Convert to lowercase and retain only English letters, punctuation, and spaces
+    val cleanedText = text.toLowerCase.replaceAll("[^a-zA-Z\\p{Punct}\\s]", "")
+    // Split the cleaned text into words and group them into shards
+    cleanedText.split("\\s+").grouped(shardSize).map(_.mkString(" ")).toSeq
   }
+
 
   // Convert text shards into numerical tokens
   private def convertShardsToTokens(shards: Seq[String]): Seq[IntArrayList] = {
@@ -29,15 +41,14 @@ class DataProcessor(data: String, shardSize: Int) {
 
       tokens.foreach { token =>
         // Add the token to the vocabulary if it does not exist
-        val index = vocabulary.getOrElse(token, {
-          // If the token is not in the vocabulary, add it with a new index
-          val newIndex = vocabulary.size // Current size gives a unique index
+        val index = vocabulary.getOrElseUpdate(token, {
+          val newIndex = vocabulary.size // Assign a unique index
           vocabulary += (token -> newIndex) // Add token to the vocabulary
-          vocabFrequency += (token -> 0)
+          vocabFrequency += (token -> 1) // Initialize frequency count to 1
           newIndex // Return the new index
         })
 
-        vocabFrequency(token) += 1
+        vocabFrequency(token) += 1 // Increment frequency count for existing token
         intArrayList.add(index) // Add the token's index to the IntArrayList
       }
 
@@ -55,4 +66,13 @@ class DataProcessor(data: String, shardSize: Int) {
       decodedTokens.mkString(" ")
     }
   }
+
+  def decodeToken(token: Int): String = {
+    vocabulary.find(_._2 == token).map(_._1).getOrElse("UNK")
+  }
+
+  // vars used to update data without creating new objects
+  // This allows us to keep context
+  private var data = new String
+  private var shardSize = 0
 }

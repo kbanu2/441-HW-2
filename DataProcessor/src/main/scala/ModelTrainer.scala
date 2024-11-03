@@ -1,10 +1,13 @@
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration
 import org.deeplearning4j.nn.conf.layers.{EmbeddingLayer, OutputLayer}
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
+import org.deeplearning4j.util.ModelSerializer
 import org.nd4j.linalg.activations.Activation
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.lossfunctions.LossFunctions
 import org.slf4j.{Logger, LoggerFactory}
+
+import java.io.File
 
 // Class to train a neural network model for generating embeddings.
 class ModelTrainer(vocabSize: Int, embeddingDim: Int, inputFeatures: INDArray, outputLabels: INDArray) {
@@ -43,5 +46,10 @@ class ModelTrainer(vocabSize: Int, embeddingDim: Int, inputFeatures: INDArray, o
   // Retrieve the embeddings (weights) from the embedding layer.
   def getEmbeddings: INDArray = {
     model.getLayer(0).getParam("W")
+  }
+
+  def saveModel(filePath: String): Unit = {
+    ModelSerializer.writeModel(model, new File(filePath), true)
+    logger.info(s"Model saved to $filePath")
   }
 }
