@@ -44,7 +44,7 @@ Before running the program, ensure you have the following installed:
 ## Installation## 
 ### Clone the Repository ###
 
-`[git clone https://github.com/yourusername/DataProcessor.git](https://github.com/kbanu2/441-HW-2.git)`
+`git clone https://github.com/kbanu2/441-HW-2.git`
 `cd DataProcessor`
 
 ### Build the Project ###
