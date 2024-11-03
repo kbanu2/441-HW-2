@@ -133,16 +133,16 @@ class DataProcessorTest extends AnyFlatSpec with Matchers {
     // Check the content of the first shard
     val firstShardTokens = tokens.head
     firstShardTokens.size() shouldEqual 3
-    firstShardTokens.get(0) shouldEqual 0 // "one"
-    firstShardTokens.get(1) shouldEqual 1 // "two"
-    firstShardTokens.get(2) shouldEqual 2 // "three"
+    firstShardTokens.get(0) shouldEqual 0
+    firstShardTokens.get(1) shouldEqual 1
+    firstShardTokens.get(2) shouldEqual 2
 
     // Check the content of the second shard
     val secondShardTokens = tokens(1)
     secondShardTokens.size() shouldEqual 3
-    secondShardTokens.get(0) shouldEqual 3 // "four"
-    secondShardTokens.get(1) shouldEqual 4 // "five"
-    secondShardTokens.get(2) shouldEqual 5 // "six"
+    secondShardTokens.get(0) shouldEqual 3
+    secondShardTokens.get(1) shouldEqual 4
+    secondShardTokens.get(2) shouldEqual 5
   }
 
   it should "correctly update vocabulary frequencies with repeated words" in {

@@ -19,46 +19,46 @@ object Main extends App {
   val config = configLoader.appConfig
 
   // Extract configuration values
-  val textFile = config("textFile").toString
-  val outputFile = config("outputFile").toString
+  private val textFile = config("textFile").toString
+  private val outputFile = config("outputFile").toString
   val shardSize = config("shardSize").asInstanceOf[Int]
   val embeddingDim = config("embeddingDim").asInstanceOf[Int]
   val windowSize = config("windowSize").asInstanceOf[Int]
   val stepSize = config("stepSize").asInstanceOf[Int]
-  val batchSize = config("batchSize").asInstanceOf[Int]
-  val numEpochs = config("numEpochs").asInstanceOf[Int]
+  private val batchSize = config("batchSize").asInstanceOf[Int]
+  private val numEpochs = config("numEpochs").asInstanceOf[Int]
 
-  val fileProcessor = new FileProcessorImpl
+  private val fileProcessor = new FileProcessorImpl
   val logger = LoggerFactory.getLogger(this.getClass)
 
-  val sparkSession = SparkSession.builder()
+  private val sparkSession = SparkSession.builder()
     .appName("SparkApp")
     .master("local[*]")
     .getOrCreate()
 
-  val sc = sparkSession.sparkContext
+  private val sc = sparkSession.sparkContext
 
   // Load text data from the specified file path
-  val textData = scala.io.Source.fromFile(textFile).getLines().toSeq
-  val dataRDD: RDD[Seq[Double]] = sc.parallelize(textData).flatMap { chunk =>
+  private val textData = scala.io.Source.fromFile(textFile).getLines().toSeq
+  private val dataRDD: RDD[Seq[Double]] = sc.parallelize(textData).flatMap { chunk =>
     val results = fileProcessor.processChunk(chunk)
     results.vectorEmbedding.map(e => e.map(math.abs).toSeq).toSeq
   }
 
   // Define sliding window transformation
-  def createSlidingWindows(embedding: Seq[Double], windowSize: Int, stepSize: Int): Seq[Seq[Double]] = {
+  private def createSlidingWindows(embedding: Seq[Double], windowSize: Int, stepSize: Int): Seq[Seq[Double]] = {
     embedding.sliding(windowSize, stepSize).toSeq
   }
 
   // Generate sliding windows in parallel
-  val slidingWindowsRDD: RDD[Seq[Seq[Double]]] = dataRDD.mapPartitions { partition =>
+  private val slidingWindowsRDD: RDD[Seq[Seq[Double]]] = dataRDD.mapPartitions { partition =>
     partition.map { embedding =>
       createSlidingWindows(embedding, windowSize, stepSize)
     }
   }
 
   // Prepare training data as RDD of DataSet instances
-  val trainingDataRDD: RDD[DataSet] = slidingWindowsRDD.flatMap { windows =>
+  private val trainingDataRDD: RDD[DataSet] = slidingWindowsRDD.flatMap { windows =>
     windows.sliding(windowSize, 1).collect {
       case Seq(input, target) =>
         val inputNd4j = Nd4j.create(input.toArray).reshape(windowSize, 1)
@@ -68,8 +68,8 @@ object Main extends App {
   }
 
   // Collect training data to feed to Deeplearning4j model
-  val trainingData = trainingDataRDD.collect()
-  val dataSetIterator = new ListDataSetIterator(trainingData.toList.asJava, batchSize)
+  private val trainingData = trainingDataRDD.collect()
+  private val dataSetIterator = new ListDataSetIterator(trainingData.toList.asJava, batchSize)
 
   // Model configuration
   private val modelConfig = new NeuralNetConfiguration.Builder()
@@ -92,7 +92,7 @@ object Main extends App {
   // Set up listeners to monitor training progress
   model.setListeners(new ScoreIterationListener(10))
 
-  val statsPrinter = new StatisticsPrinter(fileProcessor.dataProcessor)
+  private val statsPrinter = new StatisticsPrinter(fileProcessor.dataProcessor)
   for (epoch <- 0 until numEpochs) {
     logger.info(s"Starting epoch $epoch")
     val startTime = System.currentTimeMillis()
@@ -104,7 +104,7 @@ object Main extends App {
     logger.info(s"Epoch $epoch completed in ${(endTime - startTime)} ms")
   }
 
-  val textGenerator = new TextGenerator(fileProcessor.dataProcessor)
+  private val textGenerator = new TextGenerator(fileProcessor.dataProcessor)
   print("Enter Sentence: ")
   val text = readLine()
   print("Enter max sentence length (int): ")
