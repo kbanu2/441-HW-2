@@ -44,7 +44,7 @@ class DataProcessor() {
         val index = vocabulary.getOrElseUpdate(token, {
           val newIndex = vocabulary.size // Assign a unique index
           vocabulary += (token -> newIndex) // Add token to the vocabulary
-          vocabFrequency += (token -> 1) // Initialize frequency count to 1
+          vocabFrequency += (token -> 0) // Initialize frequency count to 1
           newIndex // Return the new index
         })
 

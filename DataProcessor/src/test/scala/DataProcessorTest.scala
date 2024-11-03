@@ -7,7 +7,9 @@ class DataProcessorTest extends AnyFlatSpec with Matchers {
   "DataProcessor" should "process data correctly into shards and tokens" in {
     val inputText = "hello world hello"
     val shardSize = 2
-    val dataProcessor = new DataProcessor(inputText, shardSize)
+    val dataProcessor = new DataProcessor()
+    dataProcessor.changeData(inputText)
+    dataProcessor.setShardSize(shardSize)
 
     // Process the data
     val tokens = dataProcessor.processData()
@@ -31,7 +33,9 @@ class DataProcessorTest extends AnyFlatSpec with Matchers {
   it should "decode tokens back to text correctly" in {
     val inputText = "hello world"
     val shardSize = 1
-    val dataProcessor = new DataProcessor(inputText, shardSize)
+    val dataProcessor = new DataProcessor()
+    dataProcessor.changeData(inputText)
+    dataProcessor.setShardSize(shardSize)
 
     // Process the data to get tokens
     val tokens = dataProcessor.processData()
@@ -46,7 +50,9 @@ class DataProcessorTest extends AnyFlatSpec with Matchers {
   it should "handle unknown tokens gracefully" in {
     val inputText = "unknown token test"
     val shardSize = 1
-    val dataProcessor = new DataProcessor(inputText, shardSize)
+    val dataProcessor = new DataProcessor()
+    dataProcessor.changeData(inputText)
+    dataProcessor.setShardSize(shardSize)
 
     // Process the data
     val tokens = dataProcessor.processData()
@@ -61,7 +67,9 @@ class DataProcessorTest extends AnyFlatSpec with Matchers {
   it should "keep track of vocabulary frequencies" in {
     val inputText = "test test test example"
     val shardSize = 2
-    val dataProcessor = new DataProcessor(inputText, shardSize)
+    val dataProcessor = new DataProcessor()
+    dataProcessor.changeData(inputText)
+    dataProcessor.setShardSize(shardSize)
 
     // Process the data
     dataProcessor.processData()
@@ -74,7 +82,9 @@ class DataProcessorTest extends AnyFlatSpec with Matchers {
   it should "process single word input correctly" in {
     val inputText = "hello"
     val shardSize = 1
-    val dataProcessor = new DataProcessor(inputText, shardSize)
+    val dataProcessor = new DataProcessor()
+    dataProcessor.changeData(inputText)
+    dataProcessor.setShardSize(shardSize)
 
     // Process the data
     val tokens = dataProcessor.processData()
@@ -88,7 +98,9 @@ class DataProcessorTest extends AnyFlatSpec with Matchers {
   it should "handle special characters in input" in {
     val inputText = "hello, world! #Scala"
     val shardSize = 2
-    val dataProcessor = new DataProcessor(inputText, shardSize)
+    val dataProcessor = new DataProcessor()
+    dataProcessor.changeData(inputText)
+    dataProcessor.setShardSize(shardSize)
 
     // Process the data
     val tokens = dataProcessor.processData()
@@ -108,7 +120,9 @@ class DataProcessorTest extends AnyFlatSpec with Matchers {
   it should "tokenize input with varying shard sizes correctly" in {
     val inputText = "one two three four five six"
     val shardSize = 3
-    val dataProcessor = new DataProcessor(inputText, shardSize)
+    val dataProcessor = new DataProcessor()
+    dataProcessor.changeData(inputText)
+    dataProcessor.setShardSize(shardSize)
 
     // Process the data
     val tokens = dataProcessor.processData()
@@ -134,7 +148,9 @@ class DataProcessorTest extends AnyFlatSpec with Matchers {
   it should "correctly update vocabulary frequencies with repeated words" in {
     val inputText = "hello world hello world"
     val shardSize = 2
-    val dataProcessor = new DataProcessor(inputText, shardSize)
+    val dataProcessor = new DataProcessor()
+    dataProcessor.changeData(inputText)
+    dataProcessor.setShardSize(shardSize)
 
     // Process the data
     dataProcessor.processData()
