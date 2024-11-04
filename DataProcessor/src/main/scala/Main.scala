@@ -14,8 +14,10 @@ import org.nd4j.linalg.factory.Nd4j
 import scala.io.StdIn.readLine
 
 object Main extends App {
+  println("Enter the absolute path to the yaml file: ")
+  val yamlPath = readLine()
   // Load configuration
-  val configLoader = new ConfigLoader("DataProcessor/src/main/resources/application.yaml")
+  val configLoader = new ConfigLoader(yamlPath)
   val config = configLoader.appConfig
 
   // Extract configuration values
